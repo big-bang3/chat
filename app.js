@@ -136,6 +136,5 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-app.get('/api',function(req,res){res.send({name:"bigbang",sex:"male"});})
-server.listen(3000,function(){})
+server.listen(3000)
 module.exports = app;
