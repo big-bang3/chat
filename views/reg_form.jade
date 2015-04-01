@@ -1,0 +1,145 @@
+html
+    script(type="text/javascript" src="/socket.io/socket.io.js")
+    script(src="/javascripts/jquery.min.js")
+    if user_name
+        script.
+            var entityMap = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': '&quot;',
+                "'": '&#39;',
+                "/": '&#x2F;'
+              };
+
+              function escapeHtml(string) {
+                return String(string).replace(/[&<>"'\/]/g, function (s) {
+                  return entityMap[s];
+                });
+              }
+              var name = ''
+            var socket_addrs=''
+            $('document').ready(function(){
+            $('#send_message').hide();
+            $('#Recv').hide();
+            var socket=io();
+            socket.emit('fetch_unread_msg',"#{user_name}");
+            socket.on('display_unread_msg',function(msgs_list){
+                
+
+
+
+                });    
+            socket.on('msg_from_client',function(msg){
+            if(socket_addrs==msg.sender_addr){
+            $('#rec_msg').append(msg.my_name + " : " + escapeHtml(msg.message)+'<br>');
+            $("#rec_msg").animate({ scrollTop: $('#rec_msg')[0].scrollHeight}, 500);
+            }
+            else{$('#new_msg').append('<a href="" id='+msg.sender_addr+'>'+msg.my_name+'</a>'+"<br/>");
+            // alert("New mesage from " + msg.my_name)
+            
+            $('#new_msg a').click(function(e){
+            e.preventDefault();
+            name = $(this).text();
+            get_msg = {user1:"#{user_name}",user2:name}
+            socket.emit('fetch_msgs',get_msg);
+            
+            $('#sending_to').html('<h3>You are sending message to '+ name+'</h3>');
+            socket_addrs = $(this).attr('id');
+            $('#send_message').show();
+            $('#Recv').show();
+            $(this).hide();
+                                    });
+            }
+
+            });
+            socket.emit('user_name',"#{user_name}");
+            socket.on('users_online',function(user_list){
+            $('#Div1').empty();
+            for(i=0;i<user_list.length;i++)
+            if(user_list[i].msg!="#{user_name}")
+            {
+            $('#Div1').append('<a href="" id='+user_list[i].my_id+'>'+user_list[i].msg+'</a>'+"<br/>");
+            if(user_list[i].msg==name)
+            socket_addrs = user_list[i].my_id
+            }
+            $('#Div1 a').click(function(e){
+            e.preventDefault();
+            name = $(this).text();
+            get_msg = {user1:"#{user_name}",user2:name}
+            socket.emit('fetch_msgs',get_msg);
+            
+            $('#sending_to').html('<h3>You are sending message to '+ name+'</h3>');
+            socket_addrs = $(this).attr('id');
+            $('#send_message').show();
+            $('#Recv').show();
+            $('#new_msg').find(name).hide();
+            //$("#new_msg:contains(name)").hide();
+            
+                                    });                        
+            });
+            socket.on('display_msgs',function(result){
+            $('#rec_msg').empty();
+            for(i=0;i<result.length;i++)
+            $('#rec_msg').append(result[i].sender+' : ' + result[i].message+'<br/>');
+            $("#rec_msg").animate({ scrollTop: $('#rec_msg')[0].scrollHeight}, 500);
+            });
+
+            $('#send_msg').click(function(){
+            var msg = $('#msg_val').val();
+            var s = {my_name:"#{user_name}",message:msg,addr:socket_addrs,sender_addr:socket.id,send_to:name}
+            $('#msg_val').val('');
+            $('#rec_msg').append("#{user_name}" + ' : '+ escapeHtml(msg)+'<br>');
+            $("#rec_msg").animate({ scrollTop: $('#rec_msg')[0].scrollHeight}, 500);
+            socket.emit('user_clicked',s); 
+                                            });
+            $('#msg_val').keydown(function(key){
+            if(key.which == 13 && !key.shiftKey) 
+            $('#send_msg').trigger('click');
+            });
+            });
+        h3.
+                Logged In 
+        span(id="my_name").
+            #{user_name}
+        span(style="float:right;")
+            a(href="/logout").
+                Logout
+
+        h2.
+            Online users :-
+        h4(id='Div1').
+        #sending_to
+        table
+          tr
+            td  
+              #send_message
+                  |Send message
+                  br
+                  textarea(rows=10,cols=20, id='msg_val')
+                  br
+                  input(type="submit" id="send_msg")
+            td(style="padding-left:100px;")
+              h4(id="Recv").
+                  | Messages :
+              #rec_msg(style="height:auto;max-height:120px;overflow:auto;width:200px;")
+            td
+              h4.
+                New Messges:
+              #new_msg
+
+            
+
+
+
+    else
+        h1 Register Here !!
+        form(action="" method="post")
+            input(type="text" name="user" placeholder="enter user name")
+            input(type="password" name="pas" placeholder="enter password")
+            input(type="submit" name="submit")
+        h1 Login Here !!
+            form(action="/../login/" method="post")
+                input(type="text" name="log_user" placeholder="enter user name")
+                input(type="password" name="log_pas" placeholder="enter password")
+                input(type="submit" name="log_submit")

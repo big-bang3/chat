@@ -1,0 +1,7 @@
+html
+	script(type="text/javascript" src="/socket.io/socket.io.js")
+  	script.
+    	var socket=io();
+    	socket.on('my_msg',function(my_msg){
+    	console.log(my_msg.msg);
+    	})

@@ -1,0 +1,33 @@
+html
+    script(type="text/javascript" src="/socket.io/socket.io.js")
+    script(src="/javascripts/jquery.min.js")
+    script.
+        $('document').ready(function(){
+
+
+        var socket=io();
+        $('#enter').click(function(){
+        var name = $('#name').val();
+        $('#Div2').hide();
+        socket.emit('user_name',name);
+        });
+        socket.on('users_online',function(user_list){
+        $('#Div1').empty();
+        for(i=0;i<user_list.length;i++)
+        $('#Div1').append('<a href='+'/login/'+user_list[i].my_id+'>'+user_list[i].msg+'</a>'+"<br/>");
+        });
+        $('a').click(function(){
+
+        prompt('U clicked');
+
+        })
+        });
+        
+
+    div(id='Div1')
+        h1 Welcome to the site
+    div(id='Div2')
+        h2 Enter your nickname
+        input(type="text" id="name")
+        input(type="button" id="enter" value="Enter")
+    hi #{user_name}
